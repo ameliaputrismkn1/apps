@@ -36,9 +36,12 @@ signUp.addEventListener('click', (event) => {
     const auth = getAuth();
     const db = getFirestore();
 
+    console.log('Attempting to create user with email:', email);
+
     createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             const user = userCredential.user;
+            console.log('User created:', user);
             if (user) {
                 sendEmailVerification(user);
             }
@@ -51,18 +54,20 @@ signUp.addEventListener('click', (event) => {
             const docRef = doc(db, "users", user.uid);
             setDoc(docRef, userData)
                 .then(() => {
+                    console.log('User data saved to Firestore');
                     window.location.href = 'index.html';
                 })
                 .catch((error) => {
-                    console.error("error writing document", error);
+                    console.error("Error writing document", error);
                 });
         })
         .catch((error) => {
             const errorCode = error.code;
+            console.error('Error creating user:', errorCode, error.message);
             if (errorCode == 'auth/email-already-in-use') {
                 showMessage('Email Address Already Exists !!!', 'signUpMessage');
             } else {
-                showMessage('unable to create User', 'signUpMessage');
+                showMessage('Unable to create User', 'signUpMessage');
             }
         });
 });
@@ -74,11 +79,14 @@ signIn.addEventListener('click', (event) => {
     const password = document.getElementById('password').value;
     const auth = getAuth();
 
+    console.log('Attempting to sign in with email:', email);
+
     signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             const user = userCredential.user;
+            console.log('User signed in:', user);
             if (user.emailVerified) {
-                showMessage('login is successful', 'signInMessage');
+                showMessage('Login is successful', 'signInMessage');
                 localStorage.setItem('loggedInUserId', user.uid);
                 window.location.href = 'homepage.html';
             } else {
@@ -87,6 +95,7 @@ signIn.addEventListener('click', (event) => {
         })
         .catch((error) => {
             const errorCode = error.code;
+            console.error('Error signing in:', errorCode, error.message);
             if (errorCode === 'auth/invalid-credential') {
                 showMessage('Incorrect Email or Password', 'signInMessage');
             } else {
@@ -99,9 +108,12 @@ const googleSignIn = document.getElementById('googleSignIn');
 googleSignIn.addEventListener('click', (event) => {
     event.preventDefault();
     const auth = getAuth();
+    console.log('Attempting Google Sign-In');
+
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
+            console.log('Google Sign-In successful:', user);
             const db = getFirestore();
             const docRef = doc(db, "users", user.uid);
             getDoc(docRef)
